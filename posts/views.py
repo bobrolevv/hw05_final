@@ -24,13 +24,7 @@ def group_posts(request, slug):
     paginator = Paginator(posts, COUNT_POSTS_IN_PAGE)
     page_number = request.GET.get('page')
     page = paginator.get_page(page_number)
-    list_flag = True
-    context = {'group': group,
-               'posts': posts,
-               'page': page,
-               'list_flag': list_flag,
-               }
-    return render(request, 'group.html', context)
+    return render(request, 'group.html', {'page': page})
 
 
 @login_required
@@ -115,3 +109,21 @@ def add_comment(request, username, post_id):
         return redirect('posts:post_view',
                         username=user_post.author.username,
                         post_id=user_post.id)
+
+@login_required
+def follow_index(request):
+    # информация о текущем пользователе доступна в переменной request.user
+    user = request.user
+    user_posts = Post.objects.filter()
+    return render(request, "follow.html", {'user_posts': user_posts})
+
+@login_required
+def profile_follow(request, username):
+    # ...
+    pass
+
+
+@login_required
+def profile_unfollow(request, username):
+    # ...
+    pass

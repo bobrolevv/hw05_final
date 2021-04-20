@@ -6,7 +6,7 @@ from django.views.decorators.cache import cache_page
 
 from yatube.settings import COUNT_POSTS_IN_PAGE
 from .forms import PostForm, CommentForm
-from .models import Post, Group, User, Comment
+from .models import Post, Group, User, Comment, Follow
 
 
 # @cache_page(60 * 15)
@@ -113,9 +113,10 @@ def add_comment(request, username, post_id):
 @login_required
 def follow_index(request):
     # информация о текущем пользователе доступна в переменной request.user
-    user = request.user
-    user_posts = Post.objects.filter()
-    return render(request, "follow.html", {'user_posts': user_posts})
+
+    author_follow_posts = Follow.objects.filter(user=request.user)
+    user_follow_posts = Post.objects.filter(author=author_follow_posts)
+    return render(request, "follow.html", {'user_follow_posts': user_follow_posts})
 
 @login_required
 def profile_follow(request, username):

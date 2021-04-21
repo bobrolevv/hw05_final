@@ -114,9 +114,9 @@ def add_comment(request, username, post_id):
 @login_required
 def follow_index(request):
     # информация о текущем пользователе доступна в переменной request.user
-    author_follow_posts = Follow.objects.filter(user=request.user)
-    user_follow_posts = Post.objects.filter(author=request.user)
-    print(author_follow_posts[0])
+
+    follows = Follow.objects.filter(user=request.user)
+    user_follow_posts = Post.objects.filter(author=follows.id)
     return render(request, "follow.html", {'user_follow_posts': user_follow_posts})
 
 @login_required

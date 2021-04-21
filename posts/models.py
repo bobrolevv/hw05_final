@@ -82,17 +82,19 @@ class Comment(models.Model):
         auto_now_add=True
     )
 
+    def __str__(self):
+        return self.text[:15]
+
 
 class Follow(models.Model):
-    user = models.ForeignKey(
+    user = models.ManyToManyField(
         User,
         verbose_name='Подписывающийся',
-        on_delete=models.CASCADE,
         related_name="follower",
     )
-    author = models.ForeignKey(
+
+    author = models.ManyToManyField(
         User,
         verbose_name='На кого подписываются',
-        on_delete=models.CASCADE,
         related_name="following",
     )

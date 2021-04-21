@@ -111,13 +111,13 @@ def add_comment(request, username, post_id):
                         username=user_post.author.username,
                         post_id=user_post.id)
 
-# @login_required
-# def follow_index(request):
-#     # информация о текущем пользователе доступна в переменной request.user
-#
-#     author_follow_posts = Follow.objects.filter(user=request.user)
-#     user_follow_posts = Post.objects.filter(author=author_follow_posts)
-#     return render(request, "follow.html", {'user_follow_posts': user_follow_posts})
+@login_required
+def follow_index(request):
+    # информация о текущем пользователе доступна в переменной request.user
+    author_follow_posts = Follow.objects.filter(user=request.user)
+    user_follow_posts = Post.objects.filter(author=request.user)
+    print(author_follow_posts[0])
+    return render(request, "follow.html", {'user_follow_posts': user_follow_posts})
 
 @login_required
 def profile_follow(request, username):
@@ -131,6 +131,10 @@ def profile_unfollow(request, username):
     pass
 
 
-class FollowListView(generic.ListView):
-    model = Follow
-    template_name = 'follow.html'  # Определение имени вашего шаблона и его расположения
+# class FollowListView(generic.ListView):
+#     model = Follow
+#     print()
+#     template_name = 'follow.html'  # Определение имени вашего шаблона и его расположения
+#
+#     def get_queryset(self):
+#         return Post.objects.filter(author=user)

@@ -114,10 +114,10 @@ def add_comment(request, username, post_id):
 @login_required
 def follow_index(request):
     # информация о текущем пользователе доступна в переменной request.user
-
-    follows = Follow.objects.filter(user=request.user)
-    user_follow_posts = Post.objects.filter(author=follows.id)
+    # https://docs.djangoproject.com/en/3.1/topics/db/queries/#lookups-that-span-relationships
+    user_follow_posts = Post.objects.filter(follow__user=request.user)
     return render(request, "follow.html", {'user_follow_posts': user_follow_posts})
+
 
 @login_required
 def profile_follow(request, username):

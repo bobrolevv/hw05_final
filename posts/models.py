@@ -87,14 +87,18 @@ class Comment(models.Model):
 
 
 class Follow(models.Model):
-    user = models.ManyToManyField(
+    user = models.ForeignKey(
         User,
         verbose_name='Подписывающийся',
-        related_name="follower",
+        on_delete=models.CASCADE,
+        related_name='follower',
+        null=True,
     )
 
-    author = models.ManyToManyField(
-        User,
-        verbose_name='На кого подписываются',
-        related_name="following",
+    author = models.ForeignKey(
+        Post,
+        verbose_name='Автор на которого подписываются',
+        on_delete=models.CASCADE,
+        related_name='to_follow',
+        null=True,
     )

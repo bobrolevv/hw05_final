@@ -15,8 +15,8 @@
                     </a>
                     {% else %}
                     <a class="btn btn-lg btn-primary"
-                            href="{#{% url 'posts:profile_follow' profile.username %}#}" role="button">
-                    Подписаться
+                            href="{% url 'posts:profile_follow' user %}" role="button">
+                    Подписаться {{ user }} 1
                     </a>
                     {% endif %}
                 </li>

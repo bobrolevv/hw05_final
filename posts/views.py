@@ -47,12 +47,19 @@ def profile(request, username):
     page_number = request.GET.get('page')
     page = paginator.get_page(page_number)
     list_flag = True
+    # подписано на user'a
+    author_follows = Follow.objects.filter(author=user).count()
+    # user подписан на
+    user_follows = Follow.objects.filter(user=user).count()
+
     context = {'author': user,
                'page': page,
                'paginator': paginator,
                'posts_amount': posts_amount,
                'post_list': post_list,
                'list_flag': list_flag,
+               'author_follows': author_follows,
+               'user_follows': user_follows,
                }
     return render(request, 'profile.html', context)
 
@@ -115,26 +122,25 @@ def add_comment(request, username, post_id):
 def follow_index(request):
     # информация о текущем пользователе доступна в переменной request.user
     # https://docs.djangoproject.com/en/3.1/topics/db/queries/#lookups-that-span-relationships
-    # https://django.fun/docs/django/ru/3.1/topics/db/queries/
-    user_follow_posts = Post.objects.filter(follow__user=request.user)
-    return render(request, "follow.html", {'user_follow_posts': user_follow_posts})
+    user_follow_posts = Post.objects.filter(author__to_follow__user=request.user)
+    # подписано на user'a
+    author_follows = Follow.objects.filter(author=request.user).count()
+    # user подписан на
+    user_follows = Follow.objects.filter(user=request.user).count()
+    return render(request, "follow.html", {
+        'user_follow_posts': user_follow_posts,
+        'user_follows': user_follows,
+        'author_follows': author_follows,
+    }
+    )
+
 
 @login_required
 def profile_follow(request, username):
-    # ...
-    pass
+    Follow.objects.create(user=request.user, author=username)
 
 
 @login_required
 def profile_unfollow(request, username):
     # ...
     pass
-
-
-# class FollowListView(generic.ListView):
-#     model = Follow
-#     print()
-#     template_name = 'follow.html'  # Определение имени вашего шаблона и его расположения
-#
-#     def get_queryset(self):
-#         return Post.objects.filter(author=user)

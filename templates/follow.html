@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block title %}Мои подписки{% endblock %}
-{% block header %}Мои подписки{% endblock %}
+{% block header %}Мои подписки | {{ user_follows }} на меня подписано {{ author_follows }}{% endblock %}
 {% block content %}
 
     {% load cache %}

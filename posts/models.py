@@ -96,7 +96,7 @@ class Follow(models.Model):
     )
 
     author = models.ForeignKey(
-        Post,
+        User,
         verbose_name='Автор на которого подписываются',
         on_delete=models.CASCADE,
         related_name='to_follow',

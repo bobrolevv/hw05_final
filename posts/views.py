@@ -40,19 +40,21 @@ def new_post(request):
 
 
 def profile(request, username):
-    user = get_object_or_404(User, username=username)
-    post_list = Post.objects.filter(author=user)  # noqa
+    author = get_object_or_404(User, username=username)
+    post_list = Post.objects.filter(author=author)  # noqa
     posts_amount = post_list.count()
     paginator = Paginator(post_list, 10)
     page_number = request.GET.get('page')
     page = paginator.get_page(page_number)
     list_flag = True
     # подписано на user'a
-    author_follows = Follow.objects.filter(author=user).count()
+    author_follows = Follow.objects.filter(author=author).count()
     # user подписан на
-    user_follows = Follow.objects.filter(user=user).count()
+    user_follows = Follow.objects.filter(user=author).count()
+    # todo: сделать проверку на подптску
+    following = False
 
-    context = {'author': user,
+    context = {'author': author,
                'page': page,
                'paginator': paginator,
                'posts_amount': posts_amount,
@@ -60,6 +62,7 @@ def profile(request, username):
                'list_flag': list_flag,
                'author_follows': author_follows,
                'user_follows': user_follows,
+               'following': following,
                }
     return render(request, 'profile.html', context)
 
@@ -137,10 +140,20 @@ def follow_index(request):
 
 @login_required
 def profile_follow(request, username):
-    Follow.objects.create(user=request.user, author=username)
+    author = get_object_or_404(User, username=username)
+    Follow.objects.create(user=request.user, author=author)
+    return redirect('posts:profile',
+                    username=author,
+                    # following=True,
+                    )
 
 
 @login_required
 def profile_unfollow(request, username):
-    # ...
-    pass
+    author = get_object_or_404(User, username=username)
+    Follow.objects.filter(user=request.user, author=username).delete()
+    following = False
+    return redirect('posts:profile',
+                    username=author,
+                    # following=False,
+                    )

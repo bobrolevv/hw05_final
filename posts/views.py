@@ -51,8 +51,13 @@ def profile(request, username):
     author_follows = Follow.objects.filter(author=author).count()
     # user подписан на
     user_follows = Follow.objects.filter(user=author).count()
-    # todo: сделать проверку на подптску
-    following = False
+    # сделать проверку на подптску
+    a = get_object_or_404(Follow, user=request.user)
+    b = get_object_or_404(Follow, author=author)
+    if a == b:
+        following = True
+    else:
+        following = False
 
     context = {'author': author,
                'page': page,
@@ -144,7 +149,6 @@ def profile_follow(request, username):
     Follow.objects.create(user=request.user, author=author)
     return redirect('posts:profile',
                     username=author,
-                    # following=True,
                     )
 
 
@@ -152,8 +156,6 @@ def profile_follow(request, username):
 def profile_unfollow(request, username):
     author = get_object_or_404(User, username=username)
     Follow.objects.filter(user=request.user, author=username).delete()
-    following = False
     return redirect('posts:profile',
                     username=author,
-                    # following=False,
                     )

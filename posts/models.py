@@ -102,3 +102,9 @@ class Follow(models.Model):
         related_name='to_follow',
         null=True,
     )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['user', 'author'],
+                                    name='unique_follows')
+        ]

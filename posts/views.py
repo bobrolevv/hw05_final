@@ -51,14 +51,10 @@ def profile(request, username):
     author_follows = Follow.objects.filter(author=author).count()
     # user подписан на
     user_follows = Follow.objects.filter(user=author).count()
-    # сделать проверку на подптску
-    a = get_object_or_404(Follow, user=request.user)
-    b = get_object_or_404(Follow, author=author)
-    if a == b:
+    if Follow.objects.filter(user=request.user, author=author).exists():
         following = True
     else:
         following = False
-
     context = {'author': author,
                'page': page,
                'paginator': paginator,
@@ -128,8 +124,6 @@ def add_comment(request, username, post_id):
 
 @login_required
 def follow_index(request):
-    # информация о текущем пользователе доступна в переменной request.user
-    # https://docs.djangoproject.com/en/3.1/topics/db/queries/#lookups-that-span-relationships
     user_follow_posts = Post.objects.filter(author__to_follow__user=request.user)
     # подписано на user'a
     author_follows = Follow.objects.filter(author=request.user).count()
@@ -155,7 +149,7 @@ def profile_follow(request, username):
 @login_required
 def profile_unfollow(request, username):
     author = get_object_or_404(User, username=username)
-    Follow.objects.filter(user=request.user, author=username).delete()
+    Follow.objects.filter(user=request.user, author=author).delete()
     return redirect('posts:profile',
                     username=author,
                     )

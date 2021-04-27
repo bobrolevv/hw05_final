@@ -28,6 +28,33 @@ def group_posts(request, slug):
     return render(request, 'group.html', {'page': page})
 
 
+def profile(request, username):
+    author = get_object_or_404(User, username=username)
+    post_list = Post.objects.filter(author=author)  # noqa
+    posts_amount = post_list.count()
+    paginator = Paginator(post_list, 10)
+    page_number = request.GET.get('page')
+    page = paginator.get_page(page_number)
+    # # подписано на user'a
+    author_follows = Follow.objects.filter(author=author).count()
+    # # user подписан на
+    user_follows = Follow.objects.filter(user=author).count()
+    following = False
+    if request.user.is_authenticated:
+        if Follow.objects.filter(user=request.user, author=author).exists():
+            following = True
+    context = {'author': author,
+               'page': page,
+               'paginator': paginator,
+               'posts_amount': posts_amount,
+               'post_list': post_list,
+               'author_follows': author_follows,
+               'user_follows': user_follows,
+               'following': following,
+               }
+    return render(request, 'profile.html', context)
+
+
 @login_required
 def new_post(request):
     form = PostForm(request.POST or None, files=request.FILES or None,)
@@ -37,35 +64,6 @@ def new_post(request):
         post.save()
         return redirect('posts:index')
     return render(request, 'new_post.html', {'form': form})
-
-
-def profile(request, username):
-    author = get_object_or_404(User, username=username)
-    post_list = Post.objects.filter(author=author)  # noqa
-    posts_amount = post_list.count()
-    paginator = Paginator(post_list, 10)
-    page_number = request.GET.get('page')
-    page = paginator.get_page(page_number)
-    list_flag = True
-    # подписано на user'a
-    author_follows = Follow.objects.filter(author=author).count()
-    # user подписан на
-    user_follows = Follow.objects.filter(user=author).count()
-    if Follow.objects.filter(user=request.user, author=author).exists():
-        following = True
-    else:
-        following = False
-    context = {'author': author,
-               'page': page,
-               'paginator': paginator,
-               'posts_amount': posts_amount,
-               'post_list': post_list,
-               'list_flag': list_flag,
-               'author_follows': author_follows,
-               'user_follows': user_follows,
-               'following': following,
-               }
-    return render(request, 'profile.html', context)
 
 
 def post_view(request, username, post_id):

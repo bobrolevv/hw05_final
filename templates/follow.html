@@ -6,7 +6,7 @@
     {% load cache %}
     {% cache 20 index_page %}
 
-        {% for post in user_follow_posts %}
+        {% for post in page %}
 
             {% include 'includes/post_card.html' %}
 

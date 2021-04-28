@@ -33,7 +33,7 @@ def profile(request, username):
     # post_list = Post.objects.filter(author=author)  # noqa
     post_list = Post.objects.filter(author__username=username)  # noqa
     posts_amount = post_list.count()
-    paginator = Paginator(post_list, 10)
+    paginator = Paginator(post_list, COUNT_POSTS_IN_PAGE)
     page_number = request.GET.get('page')
     page = paginator.get_page(page_number)
     # подписано на user'a
@@ -132,10 +132,19 @@ def follow_index(request):
     author_follows = Follow.objects.filter(author=request.user).count()
     # user подписан на
     user_follows = Follow.objects.filter(user=request.user).count()
+
+    # post_list = Post.objects.filter(author__username=username)  # noqa
+    # posts_amount = post_list.count()
+    paginator = Paginator(user_follow_posts, COUNT_POSTS_IN_PAGE)
+    page_number = request.GET.get('page')
+    page = paginator.get_page(page_number)
+
+
     return render(request, "follow.html", {
-        'user_follow_posts': user_follow_posts,
+        # 'user_follow_posts': user_follow_posts,
         'user_follows': user_follows,
         'author_follows': author_follows,
+        'page': page,
     }
     )
 
@@ -143,11 +152,12 @@ def follow_index(request):
 @login_required
 def profile_follow(request, username):
     author = get_object_or_404(User, username=username)
-    if request.user.username != username:
-        print(f'=={type(request.user.username)}=={request.user.username}==')
-        print(f'=={type(username)}=={username}==')
-        Follow.objects.create(user=request.user, author=author)
-        print('!!!')
+    Follow.objects.create(user=request.user, author=author)
+    # if request.user.username != username:
+    #     print(f'=={type(request.user.username)}=={request.user.username}==')
+    #     print(f'=={type(username)}=={username}==')
+    #     Follow.objects.create(user=request.user, author=author)
+    #     print('!!!')
     return redirect('posts:profile', username=username)
 
 

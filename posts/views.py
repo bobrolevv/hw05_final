@@ -132,16 +132,10 @@ def follow_index(request):
     author_follows = Follow.objects.filter(author=request.user).count()
     # user подписан на
     user_follows = Follow.objects.filter(user=request.user).count()
-
-    # post_list = Post.objects.filter(author__username=username)  # noqa
-    # posts_amount = post_list.count()
     paginator = Paginator(user_follow_posts, COUNT_POSTS_IN_PAGE)
     page_number = request.GET.get('page')
     page = paginator.get_page(page_number)
-
-
     return render(request, "follow.html", {
-        # 'user_follow_posts': user_follow_posts,
         'user_follows': user_follows,
         'author_follows': author_follows,
         'page': page,

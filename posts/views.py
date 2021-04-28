@@ -30,15 +30,19 @@ def group_posts(request, slug):
 
 def profile(request, username):
     author = get_object_or_404(User, username=username)
-    post_list = Post.objects.filter(author=author)  # noqa
+    # post_list = Post.objects.filter(author=author)  # noqa
+    post_list = Post.objects.filter(author__username=username)  # noqa
     posts_amount = post_list.count()
     paginator = Paginator(post_list, 10)
     page_number = request.GET.get('page')
     page = paginator.get_page(page_number)
-    # # подписано на user'a
+    # подписано на user'a
     author_follows = Follow.objects.filter(author=author).count()
-    # # user подписан на
+    # user подписан на
     user_follows = Follow.objects.filter(user=author).count()
+    no_author = True
+    if request.user == author:
+        no_author = False
     following = False
     if request.user.is_authenticated:
         if Follow.objects.filter(user=request.user, author=author).exists():
@@ -51,6 +55,7 @@ def profile(request, username):
                'author_follows': author_follows,
                'user_follows': user_follows,
                'following': following,
+               'no_author': no_author,
                }
     return render(request, 'profile.html', context)
 
@@ -122,7 +127,7 @@ def add_comment(request, username, post_id):
 
 @login_required
 def follow_index(request):
-    user_follow_posts = Post.objects.filter(author__to_follow__user=request.user)
+    user_follow_posts = Post.objects.filter(author__following__user=request.user)
     # подписано на user'a
     author_follows = Follow.objects.filter(author=request.user).count()
     # user подписан на
@@ -138,10 +143,12 @@ def follow_index(request):
 @login_required
 def profile_follow(request, username):
     author = get_object_or_404(User, username=username)
-    Follow.objects.create(user=request.user, author=author)
-    return redirect('posts:profile',
-                    username=author,
-                    )
+    if request.user.username != username:
+        print(f'=={type(request.user.username)}=={request.user.username}==')
+        print(f'=={type(username)}=={username}==')
+        Follow.objects.create(user=request.user, author=author)
+        print('!!!')
+    return redirect('posts:profile', username=username)
 
 
 @login_required

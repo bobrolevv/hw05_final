@@ -99,7 +99,7 @@ class Follow(models.Model):
         User,
         verbose_name='Автор на которого подписываются',
         on_delete=models.CASCADE,
-        related_name='to_follow',
+        related_name='following',
         null=True,
     )
 

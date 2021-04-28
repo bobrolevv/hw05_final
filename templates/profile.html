@@ -8,6 +8,8 @@
                 {% include 'includes/user_card.html' %}
 
                 <li class="list-group-item">
+                {% if no_author %}
+
                     {% if following %}
                     <a class="btn btn-lg btn-light"
                             href="{% url 'posts:profile_unfollow' author %}" role="button">
@@ -19,6 +21,13 @@
                     Подписаться
                     </a>
                     {% endif %}
+                {% else %}
+                    <a class="btn btn-lg btn-primary"
+                            href="" role="button">
+                    Подписаться на себя!
+                    </a>
+
+                {% endif %}
                 </li>
 
             </div>

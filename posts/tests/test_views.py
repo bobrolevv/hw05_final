@@ -70,6 +70,7 @@ class PostsPagesTests(TestCase):
         response = self.authorized_client.get(
             reverse('posts:group', kwargs={'slug': self.group.slug}))
         first_object = response.context['group']
+        print(f'=={first_object}==')
         group_title_0 = first_object.title
         group_slug_0 = first_object.slug
         group_description_0 = first_object.description

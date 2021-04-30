@@ -70,7 +70,6 @@ class PostsPagesTests(TestCase):
         response = self.authorized_client.get(
             reverse('posts:group', kwargs={'slug': self.group.slug}))
         first_object = response.context['group']
-        print(f'=={first_object}==')
         group_title_0 = first_object.title
         group_slug_0 = first_object.slug
         group_description_0 = first_object.description
@@ -97,14 +96,15 @@ class PostsPagesTests(TestCase):
         # 1
         response = self.authorized_client.get(
             reverse('posts:group', kwargs={'slug': self.group.slug}))
-        first_object = response.context['posts'][0]
+        # first_object = response.context['posts'][0]
+        first_object = response.context['page'][0]
         post_text_0 = first_object.text
         self.assertEqual(post_text_0, self.post.text)
         # 2
         response = self.authorized_client.get(
             reverse('posts:group', kwargs={'slug': self.group2.slug}))
         with self.assertRaises(IndexError, msg='list index out of range'):
-            response.context['posts'][0]
+            response.context['page'][0]
 
     def test_caches(self):
         """ Проверка работы кэша index"""

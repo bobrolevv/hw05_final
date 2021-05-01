@@ -2,12 +2,10 @@ from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.shortcuts import redirect
 from django.shortcuts import render, get_object_or_404
-from django.views.decorators.cache import cache_page
 
 from yatube.settings import COUNT_POSTS_IN_PAGE
 from .forms import PostForm, CommentForm
 from .models import Post, Group, User, Comment, Follow
-from django.views import generic
 
 
 # @cache_page(60 * 15)
@@ -26,7 +24,7 @@ def group_posts(request, slug):
     page_number = request.GET.get('page')
     page = paginator.get_page(page_number)
     return render(request, 'group.html', {'page': page,
-                                          'group': group,})
+                                          'group': group})
 
 
 def profile(request, username):
@@ -115,7 +113,8 @@ def server_error(request):
 
 @login_required
 def add_comment(request, username, post_id):
-    user_post = get_object_or_404(Post, author__username=username, id=post_id)
+    user_post = get_object_or_404(Post, author__username=username,
+                                  id=post_id)
     form = CommentForm(request.POST or None, instance=None)
     if form.is_valid():
         comment = form.save(commit=False)
@@ -126,9 +125,11 @@ def add_comment(request, username, post_id):
                         username=user_post.author.username,
                         post_id=user_post.id)
 
+
 @login_required
 def follow_index(request):
-    user_follow_posts = Post.objects.filter(author__following__user=request.user)
+    user_follow_posts = Post.objects.filter(
+        author__following__user=request.user)
     # подписано на user'a
     author_follows = Follow.objects.filter(author=request.user).count()
     # user подписан на

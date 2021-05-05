@@ -4,7 +4,7 @@ from django.core.cache import caches
 from django.test import Client, TestCase
 from django.urls import reverse
 
-from posts.models import Post, Group, User
+from posts.models import Post, Group, User, Comment
 
 User = get_user_model()
 
@@ -36,6 +36,12 @@ class PostsPagesTests(TestCase):
             text='Тестовый текст',
             group=cls.group,
             author=cls.user,
+        )
+
+        cls.comments = Comment.objects.create(
+            post=cls.post,
+            author=cls.user,
+            text='тестовый коментарий'
         )
 
     def test_pages_use_correct_template(self):
@@ -96,7 +102,6 @@ class PostsPagesTests(TestCase):
         # 1
         response = self.authorized_client.get(
             reverse('posts:group', kwargs={'slug': self.group.slug}))
-        # first_object = response.context['posts'][0]
         first_object = response.context['page'][0]
         post_text_0 = first_object.text
         self.assertEqual(post_text_0, self.post.text)
@@ -110,3 +115,31 @@ class PostsPagesTests(TestCase):
         """ Проверка работы кэша index"""
         response_after = self.authorized_client.get(reverse("posts:index"))
         self.assertNotEqual(self.response_before, response_after)
+
+    def test_authorized_client_follows_add_del(self):
+        """ Авторизованный пользователь может подписываться на других
+        пользователей и удалять их из подписок"""
+        pass
+
+    def test_new_post_in_follow(self):
+        """ Новая запись пользователя появляется в ленте тех, кто на него
+        подписан и не появляется в ленте тех, кто не подписан на него"""
+        pass
+
+    def test_only_authorized_client_comments(self):
+        """ Только авторизированный пользователь может комментировать
+        посты"""
+        count_comments = Comment.objects.all().count()
+        test_comment = Comment.objects.create(author=PostsPagesTests.user,
+                                              post=PostsPagesTests.post,
+                                              text='lalalalala')
+        count_comments2 = Comment.objects.all().count()
+        try:
+            test_comment2 = Comment.objects.create(
+                                            author=PostsPagesTests.guest_client,
+                                            post=PostsPagesTests.post,
+                                            text='lalalalala')
+        except ValueError:
+            print('123')
+        count_comments3 = Comment.objects.all().count()
+        print(count_comments, count_comments2, count_comments3)

@@ -1,5 +1,6 @@
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
+from django.http import HttpResponse
 from django.shortcuts import redirect
 from django.shortcuts import render, get_object_or_404
 
@@ -69,7 +70,7 @@ def new_post(request):
     return render(request, 'new_post.html', {'form': form})
 
 
-def post_view(request, post_id, username):  # убрать username
+def post_view(request, post_id, username):
     post = get_object_or_404(Post, id=post_id)
     posts_amount = Post.objects.filter(author=post.author).count()  # noqa
     form = CommentForm()
@@ -89,7 +90,7 @@ def post_view(request, post_id, username):  # убрать username
 
 
 @login_required
-def post_edit(request, username, post_id):  # убрать username
+def post_edit(request, username, post_id):
     post = get_object_or_404(Post, id=post_id)
     if request.user != post.author:
         return redirect('posts:profile', username=post.author)
@@ -99,7 +100,7 @@ def post_edit(request, username, post_id):  # убрать username
     if form.is_valid():
         post.save()
         return redirect('posts:post_view',
-                        username=post.author,  # убрать username
+                        username=post.author,
                         post_id=post_id)
     return render(request, 'new_post.html', {'form': form, 'post': post})
 
@@ -118,7 +119,7 @@ def server_error(request):
 
 
 @login_required
-def add_comment(request, username, post_id):  # убрать username
+def add_comment(request, username, post_id):
     user_post = get_object_or_404(Post, id=post_id)
     form = CommentForm(request.POST or None, instance=None)
     if form.is_valid():
@@ -127,16 +128,20 @@ def add_comment(request, username, post_id):  # убрать username
         comment.author = request.user
         comment.save()
         return redirect('posts:post_view',
-                        username=user_post.author.username, # убрать username
+                        username=user_post.author.username,
                         post_id=user_post.id)
+    else:
+        return HttpResponse('вы ввели некорректные данные')
 
 
 @login_required
 def follow_index(request):
+    # здесь вроде один запрос, я обращаюсь к модели Post и выбираю из неё
+    # тех авторов, которые относятся к user'у из модели Follow, используя
+    # related_name='following'
+    # поправьте меня, если я не прав
     user_follow_posts = Post.objects.filter(
         author__following__user=request.user)
-    # user_follow_posts = Follow.objects.filter(
-    #                     user__follower=request.user)
     # подписано на user'a
     author_follows = Follow.objects.filter(author=request.user).count()
     # user подписан на
@@ -155,10 +160,8 @@ def follow_index(request):
 @login_required
 def profile_follow(request, username):
     author = get_object_or_404(User, username=username)
-    if Follow.objects.filter(user=request.user, author=author).exists():
-        return redirect('posts:profile', username=author)
     if request.user.username != username:
-        Follow.objects.create(user=request.user, author=author)
+        Follow.objects.get_or_create(user=request.user, author=author)
     return redirect('posts:profile', username=author)
 
 

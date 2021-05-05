@@ -82,6 +82,9 @@ class Comment(models.Model):
         auto_now_add=True
     )
 
+    class Meta:
+        ordering = ['-created']
+
     def __str__(self):
         return self.text[:15]
 
@@ -102,11 +105,3 @@ class Follow(models.Model):
         related_name='following',
         null=True,
     )
-
-    # class Meta:
-    #     constraints = [
-    #         models.UniqueConstraint(fields=['user', 'author'],
-    #         name='unique_follows'),
-    #         models.CheckConstraint(check=~Q(user=F('author')),
-    #         name='user_not_author'),
-    #     ]

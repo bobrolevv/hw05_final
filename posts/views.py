@@ -29,7 +29,6 @@ def group_posts(request, slug):
 
 def profile(request, username):
     author = get_object_or_404(User, username=username)
-    # post_list = Post.objects.filter(author=author)  # noqa
     post_list = Post.objects.filter(author__username=username)  # noqa
     posts_amount = post_list.count()
     paginator = Paginator(post_list, COUNT_POSTS_IN_PAGE)
@@ -70,30 +69,37 @@ def new_post(request):
     return render(request, 'new_post.html', {'form': form})
 
 
-def post_view(request, username, post_id):
-    post = get_object_or_404(Post, author__username=username, id=post_id)
+def post_view(request, post_id, username):  # убрать username
+    post = get_object_or_404(Post, id=post_id)
     posts_amount = Post.objects.filter(author=post.author).count()  # noqa
     form = CommentForm()
+    # подписано на user'a
+    author_follows = Follow.objects.filter(author=post.author).count()
+    # user подписан на
+    user_follows = Follow.objects.filter(user=post.author).count()
     context = {'post': post,
                'author': post.author,
                'posts_amount': posts_amount,
                'comments': Comment.objects.filter(post=post),
                'form': form,
+               'author_follows': author_follows,
+               'user_follows': user_follows,
                }
     return render(request, 'post.html', context)
 
 
 @login_required
-def post_edit(request, username, post_id):
-    post = get_object_or_404(Post, author__username=username, id=post_id)
+def post_edit(request, username, post_id):  # убрать username
+    post = get_object_or_404(Post, id=post_id)
     if request.user != post.author:
-        return redirect('posts:profile', username=username)
+        return redirect('posts:profile', username=post.author)
     form = PostForm(request.POST or None,
                     files=request.FILES or None,
                     instance=post)
     if form.is_valid():
         post.save()
-        return redirect('posts:post_view', username=username,
+        return redirect('posts:post_view',
+                        username=post.author,  # убрать username
                         post_id=post_id)
     return render(request, 'new_post.html', {'form': form, 'post': post})
 
@@ -112,9 +118,8 @@ def server_error(request):
 
 
 @login_required
-def add_comment(request, username, post_id):
-    user_post = get_object_or_404(Post, author__username=username,
-                                  id=post_id)
+def add_comment(request, username, post_id):  # убрать username
+    user_post = get_object_or_404(Post, id=post_id)
     form = CommentForm(request.POST or None, instance=None)
     if form.is_valid():
         comment = form.save(commit=False)
@@ -122,7 +127,7 @@ def add_comment(request, username, post_id):
         comment.author = request.user
         comment.save()
         return redirect('posts:post_view',
-                        username=user_post.author.username,
+                        username=user_post.author.username, # убрать username
                         post_id=user_post.id)
 
 
@@ -130,6 +135,8 @@ def add_comment(request, username, post_id):
 def follow_index(request):
     user_follow_posts = Post.objects.filter(
         author__following__user=request.user)
+    # user_follow_posts = Follow.objects.filter(
+    #                     user__follower=request.user)
     # подписано на user'a
     author_follows = Follow.objects.filter(author=request.user).count()
     # user подписан на

@@ -136,12 +136,14 @@ def add_comment(request, username, post_id):
 
 @login_required
 def follow_index(request):
+    # ===================================================================
     # здесь вроде один запрос, я обращаюсь к модели Post и выбираю из неё
     # тех авторов, которые относятся к user'у из модели Follow, используя
     # related_name='following'
     # поправьте меня, если я не прав
     user_follow_posts = Post.objects.filter(
         author__following__user=request.user)
+    # ===================================================================
     # подписано на user'a
     author_follows = Follow.objects.filter(author=request.user).count()
     # user подписан на

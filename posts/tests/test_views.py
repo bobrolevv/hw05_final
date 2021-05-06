@@ -4,7 +4,7 @@ from django.core.cache import caches
 from django.test import Client, TestCase
 from django.urls import reverse
 
-from posts.models import Post, Group, User, Comment
+from posts.models import Post, Group, User, Comment, Follow
 
 User = get_user_model()
 
@@ -15,9 +15,19 @@ class PostsPagesTests(TestCase):
         super().setUpClass()
         cls.guest_client = Client()
         cls.cache = caches['default']
+
         cls.user = User.objects.create_user(username='Anton')
         cls.authorized_client = Client()
         cls.authorized_client.force_login(cls.user)
+
+        cls.user2 = User.objects.create_user(username='Pavel')
+        cls.authorized_client2 = Client()
+        cls.authorized_client2.force_login(cls.user2)
+
+        cls.user3 = User.objects.create_user(username='Misha')
+        cls.authorized_client3 = Client()
+        cls.authorized_client3.force_login(cls.user3)
+
         cls.response_before = cls.authorized_client.get(
             reverse('posts:index'))
 
@@ -116,15 +126,51 @@ class PostsPagesTests(TestCase):
         response_after = self.authorized_client.get(reverse("posts:index"))
         self.assertNotEqual(self.response_before, response_after)
 
-    def test_authorized_client_follows_add_del(self):
-        """ Авторизованный пользователь может подписываться на других
-        пользователей и удалять их из подписок"""
-        pass
+    def test_authorized_client_follows(self):
+        """
+        1. Авторизованный пользователь может подписываться на других
+        пользователей и удалять их из подписок
+        2. Новая запись пользователя появляется в ленте тех, кто на него
+        подписан и не появляется в ленте тех, кто не подписан на него
+        """
+        # 1
+        # посчитаем к-во всех подписок
+        follows_0 = Follow.objects.all().count()
+        # user2 подписывается на user'a
+        Follow.objects.create(user=PostsPagesTests.user2,
+                              author=PostsPagesTests.user)
+        # посчитаем к-во всех подписок
+        follows_1 = Follow.objects.all().count()
 
-    def test_new_post_in_follow(self):
-        """ Новая запись пользователя появляется в ленте тех, кто на него
-        подписан и не появляется в ленте тех, кто не подписан на него"""
-        pass
+        # ==2==
+        # посчитаем к-во постов избранных авторов  у user2 и user3
+        count_user2_follow_posts = Post.objects.filter(
+            author__following__user = PostsPagesTests.user2).count()
+        count_user3_follow_posts = Post.objects.filter(
+            author__following__user=PostsPagesTests.user3).count()
+        # user публикует НОВЫЙ ПОСТ!
+        PostsPagesTests.post1 = Post.objects.create(
+            text='user публикует НОВЫЙ ПОСТ!',
+            group=PostsPagesTests.group,
+            author=PostsPagesTests.user,)
+        # посчитаем к-во постов избранных авторов  у user2 и user3 еще раз
+        count_user2_follow_posts_2 = Post.objects.filter(
+                author__following__user=PostsPagesTests.user2).count()
+        count_user3_follow_posts_2 = Post.objects.filter(
+            author__following__user=PostsPagesTests.user3).count()
+        self.assertEqual(count_user2_follow_posts, 1)
+        self.assertEqual(count_user3_follow_posts, 0)
+        self.assertEqual(count_user2_follow_posts_2, 2)
+        self.assertEqual(count_user3_follow_posts_2, 0)
+        # ==end 2==
+
+        # user2 отписывается от user'a (видимо НОВЫЙ ПОСТ не так уж и хорош)
+        Follow.objects.filter(user=PostsPagesTests.user2,
+                              author=PostsPagesTests.user).delete()
+        follows_2 = Follow.objects.all().count()
+        self.assertEqual(follows_0, 0)
+        self.assertEqual(follows_1, 1)
+        self.assertEqual(follows_2, 0)
 
     def test_only_authorized_client_comments(self):
         """ Только авторизированный пользователь может комментировать

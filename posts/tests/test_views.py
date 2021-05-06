@@ -129,17 +129,21 @@ class PostsPagesTests(TestCase):
     def test_only_authorized_client_comments(self):
         """ Только авторизированный пользователь может комментировать
         посты"""
-        count_comments = Comment.objects.all().count()
-        test_comment = Comment.objects.create(author=PostsPagesTests.user,
-                                              post=PostsPagesTests.post,
-                                              text='lalalalala')
-        count_comments2 = Comment.objects.all().count()
-        try:
-            test_comment2 = Comment.objects.create(
-                                            author=PostsPagesTests.guest_client,
-                                            post=PostsPagesTests.post,
-                                            text='lalalalala')
-        except ValueError:
-            print('123')
-        count_comments3 = Comment.objects.all().count()
-        print(count_comments, count_comments2, count_comments3)
+        # посчитаем число комментов
+        count_comments_first = Comment.objects.all().count()
+        # добавим коммент от user'a
+        Comment.objects.create(author=PostsPagesTests.user,
+                               post=PostsPagesTests.post,
+                               text='lalalalala')
+        # посчитаем число комментов
+        count_comments_user_add = Comment.objects.all().count()
+        # ожидаем ошибку
+        with self.assertRaises(ValueError, msg='автор комента д.б. user'):
+            # попробуем добавить коммент от guest'a
+            Comment.objects.create(author=PostsPagesTests.guest_client,
+                                   post=PostsPagesTests.post,
+                                   text='lalalalala')
+        # посчитаем число комментов
+        count_comments_guest_add = Comment.objects.all().count()
+        self.assertNotEqual(count_comments_first, count_comments_user_add)
+        self.assertEqual(count_comments_user_add, count_comments_guest_add)

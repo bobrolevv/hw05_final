@@ -133,14 +133,17 @@ class PostsPagesTests(TestCase):
         2. Новая запись пользователя появляется в ленте тех, кто на него
         подписан и не появляется в ленте тех, кто не подписан на него
         """
-        # 1
-        # посчитаем к-во всех подписок
+        # 1.1 Авторизованный пользователь может подписываться на других
+        # пользователей
         follows_0 = Follow.objects.all().count()
-        # user2 подписывается на user'a
-        Follow.objects.create(user=PostsPagesTests.user2,
-                              author=PostsPagesTests.user)
-        # посчитаем к-во всех подписок
+        self.assertEqual(follows_0, 0)
+        response = self.authorized_client2.get(
+            f'/{PostsPagesTests.user}/follow',
+            follow=True
+        )
+        self.assertEqual(response.status_code, 200)
         follows_1 = Follow.objects.all().count()
+        self.assertEqual(follows_1, 1)
 
         # ==2==
         # посчитаем к-во постов избранных авторов  у user2 и user3
@@ -164,12 +167,14 @@ class PostsPagesTests(TestCase):
         self.assertEqual(count_user3_follow_posts_2, 0)
         # ==end 2==
 
+        # 1.2 Авторизованный пользователь может удалять других из подписок
         # user2 отписывается от user'a (видимо НОВЫЙ ПОСТ не так уж и хорош)
-        Follow.objects.filter(user=PostsPagesTests.user2,
-                              author=PostsPagesTests.user).delete()
+        response = self.authorized_client2.get(
+            f'/{PostsPagesTests.user}/unfollow',
+            follow=True
+        )
+        self.assertEqual(response.status_code, 200)
         follows_2 = Follow.objects.all().count()
-        self.assertEqual(follows_0, 0)
-        self.assertEqual(follows_1, 1)
         self.assertEqual(follows_2, 0)
 
     def test_only_authorized_client_comments(self):

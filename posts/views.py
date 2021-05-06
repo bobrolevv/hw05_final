@@ -149,7 +149,7 @@ def follow_index(request):
         'author_follows': author_follows,
         'page': page,
     }
-                  )
+    )
 
 
 @login_required

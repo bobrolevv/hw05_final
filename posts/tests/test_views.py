@@ -145,7 +145,7 @@ class PostsPagesTests(TestCase):
         # ==2==
         # посчитаем к-во постов избранных авторов  у user2 и user3
         count_user2_follow_posts = Post.objects.filter(
-            author__following__user = PostsPagesTests.user2).count()
+            author__following__user=PostsPagesTests.user2).count()
         count_user3_follow_posts = Post.objects.filter(
             author__following__user=PostsPagesTests.user3).count()
         # user публикует НОВЫЙ ПОСТ!
@@ -155,7 +155,7 @@ class PostsPagesTests(TestCase):
             author=PostsPagesTests.user,)
         # посчитаем к-во постов избранных авторов  у user2 и user3 еще раз
         count_user2_follow_posts_2 = Post.objects.filter(
-                author__following__user=PostsPagesTests.user2).count()
+            author__following__user=PostsPagesTests.user2).count()
         count_user3_follow_posts_2 = Post.objects.filter(
             author__following__user=PostsPagesTests.user3).count()
         self.assertEqual(count_user2_follow_posts, 1)

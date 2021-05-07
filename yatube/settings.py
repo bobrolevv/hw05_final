@@ -31,6 +31,7 @@ ALLOWED_HOSTS = [
     '127.0.0.1',
     '[::1]',
     'testserver',
+    '*',
 ]
 
 # Application definition
@@ -40,6 +41,7 @@ INSTALLED_APPS = [
     'core',  # contextprocessor
     'users',  # наше приложение users**
     'posts',  # наше приложение posts**
+    'debug_toolbar', # debug
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -57,6 +59,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'debug_toolbar.middleware.DebugToolbarMiddleware',  # новое приложение
+
 ]
 
 ROOT_URLCONF = 'yatube.urls'
@@ -155,3 +159,8 @@ CACHES = {
         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
     }
 }
+
+# Добавьте IP адреса при обращении с которых будет доступен debugToolbar
+INTERNAL_IPS = [
+    "127.0.0.1",
+]
